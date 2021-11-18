@@ -1,29 +1,66 @@
-﻿namespace DefaultNamespace
+﻿class Weapon
 {
-    class Weapon
-    {
-        public int Damage;
-        public int Bullets;
+    public int Damage { get; private set; }
+    public int Bullets { get; private set; }
+    public bool CanFire => Bullets > 0;
 
-        public void Fire(Player player)
+
+    public void Fire(IDamageable damageable)
+    {
+        if (CanFire)
         {
-            player.Health -= Damage;
-            Bullets -= 1;
+            Bullets--;
+            damageable.TakeDamage(Damage);
         }
     }
+}
+    
+public class Bot
+{
+    private Weapon _weapon = new Weapon();
 
-    class Player
+    public void OnSeePlayer(IDamageable player)
     {
-        public int Health;
+        _weapon.Fire(player);
     }
+}
 
-    class Bot
+public class Player : IDamageable
+{
+    private Health Health { get; } = new Health();
+        
+    public void TakeDamage(int damage)
     {
-        public Weapon Weapon;
+        Health.TakeDamage(damage);
+    }
+}
 
-        public void OnSeePlayer(Player player)
+public interface IDamageable
+{
+    void TakeDamage(int damage);
+}
+
+class Health : IDamageable
+{
+    public event Action Dead;
+    public int Value { get; private set; }
+    public bool IsDead => Value <= 0;
+
+    public void TakeDamage(int damage)
+    {
+        if (damage < 0 || IsDead)
+            throw new InvalidOperationException();
+
+        if (damage >= Value)
         {
-            Weapon.Fire(player);
+            Value = 0;
+            Dead?.Invoke();
+            return;
         }
+
+        Value -= damage;
+
+        if (Value < 0)
+            throw new InvalidOperationException();
     }
 }
