@@ -14,10 +14,10 @@
         }
     }
 }
-    
+
 public class Bot
 {
-    private Weapon _weapon = new Weapon();
+    private readonly Weapon _weapon = new Weapon();
 
     public void OnSeePlayer(IDamageable player)
     {
@@ -27,16 +27,20 @@ public class Bot
 
 public class Player : IDamageable
 {
-    private Health Health { get; } = new Health();
-        
+    private readonly Health _health = new Health();
+
+    public bool IsDead => _health.IsDead;
+
     public void TakeDamage(int damage)
     {
-        Health.TakeDamage(damage);
+        if (IsDead == false)
+            _health.TakeDamage(damage);
     }
 }
 
 public interface IDamageable
 {
+    bool IsDead { get; }
     void TakeDamage(int damage);
 }
 
