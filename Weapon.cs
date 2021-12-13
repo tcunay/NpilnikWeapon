@@ -1,9 +1,9 @@
 ﻿class Weapon
 {
+    public event Action BulletsRunOut;
     public int Damage { get; private set; }
     public int Bullets { get; private set; }
     public bool CanFire => Bullets > 0;
-
 
     public void Fire(IDamageable damageable)
     {
@@ -11,6 +11,10 @@
         {
             Bullets--;
             damageable.TakeDamage(Damage);
+        }
+        else
+        {
+            BulletsRunOut?.Invoke();
         }
     }
 }
@@ -26,25 +30,6 @@ public class Bot
 }
 
 public class Player : IDamageable
-{
-    private readonly Health _health = new Health();
-
-    public bool IsDead => _health.IsDead;
-
-    public void TakeDamage(int damage)
-    {
-        if (IsDead == false)
-            _health.TakeDamage(damage);
-    }
-}
-
-public interface IDamageable
-{
-    bool IsDead { get; }
-    void TakeDamage(int damage);
-}
-
-class Health : IDamageable
 {
     public event Action Dead;
     public int Value { get; private set; }
@@ -66,5 +51,16 @@ class Health : IDamageable
 
         if (Value < 0)
             throw new InvalidOperationException();
+}
+
+public interface IDamageable
+{
+    bool IsDead { get; }
+    void TakeDamage(int damage);
+}
+
+class Health : IDamageable
+{
+    
     }
 }
